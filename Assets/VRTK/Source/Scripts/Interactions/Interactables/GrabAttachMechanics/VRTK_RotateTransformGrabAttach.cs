@@ -140,7 +140,7 @@ namespace VRTK.GrabAttachMechanics
         /// </summary>
         public event RotateTransformGrabAttachEventHandler MaxAngleExited;
 
-        protected Vector3 previousAttachPointPosition;
+        protected Vector3 previousAttachPointLocalPosition;
         protected Vector3 currentRotation;
         protected Bounds grabbedObjectBounds;
         protected Vector3 currentRotationSpeed;
@@ -201,7 +201,7 @@ namespace VRTK.GrabAttachMechanics
             CancelUpdateRotation();
             CancelDecelerateRotation();
             bool grabResult = base.StartGrab(grabbingObject, givenGrabbedObject, givenControllerAttachPoint);
-            previousAttachPointPosition = controllerAttachPoint.transform.position;
+            previousAttachPointLocalPosition = transform.InverseTransformPoint(controllerAttachPoint.transform.position);
             grabbedObjectBounds = VRTK_SharedMethods.GetBounds(givenGrabbedObject.transform);
             limitsReached = new bool[2];
             CheckAngleLimits();
@@ -238,7 +238,7 @@ namespace VRTK.GrabAttachMechanics
                 if (StillTouching() && distance >= originDeadzone)
                 {
                     Vector3 newRotation = GetNewRotation();
-                    previousAttachPointPosition = controllerAttachPoint.transform.position;
+                    previousAttachPointLocalPosition = transform.InverseTransformPoint(controllerAttachPoint.transform.position);
                     currentRotationSpeed = newRotation;
                     UpdateRotation(newRotation, true, true);
                 }
@@ -366,7 +366,7 @@ namespace VRTK.GrabAttachMechanics
             switch (rotationAction)
             {
                 case RotationType.FollowAttachPoint:
-                    return CalculateAngle(transform.position, previousAttachPointPosition, controllerAttachPoint.transform.position);
+                    return CalculateAngle(transform.position, transform.TransformPoint(previousAttachPointLocalPosition), controllerAttachPoint.transform.position);
                 case RotationType.FollowLongitudinalAxis:
                     return BuildFollowAxisVector(grabbingObjectAngularVelocity.x);
                 case RotationType.FollowPerpendicularAxis:
